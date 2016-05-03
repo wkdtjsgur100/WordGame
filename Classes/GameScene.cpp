@@ -1,10 +1,11 @@
 ﻿#include "GameScene.h"
-#include "CSVParser.h"
 #include "base\ccUTF8.h"
 #include "SimpleAudioEngine.h"
 #include "HelloWorldScene.h"
 #include "GameOverScene.h"
 #include "ScoreManager.h"
+
+#define CONV_Y(y) 800 - y
 
 USING_NS_CC;
 using namespace ui;
@@ -27,38 +28,33 @@ cocos2d::Scene * GameScene::createScene()
 
 bool GameScene::init()
 {
-	if(!Layer::init())
+	if (!Layer::init())
 		return false;
 
 	ssize_t bufferSize = 0;
-	string getData = FileUtils::getInstance()->getStringFromFile("english_db.csv");
+	string getData = FileUtils::getInstance()->getStringFromFile("db/chinese_db.csv");
 
+	log("%s", getData.c_str());
 	if (getData != "")
 	{
-		CSVParser::getInstance()->convertToMap(getData.substr(0,10000));
+		dataManager.parsingData(getData);
 	}
 
+	/*
 	auto listener = EventListenerKeyboard::create();
 	listener->onKeyReleased = CC_CALLBACK_2(GameScene::onKeyReleased, this);
 	this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener, this);
+	*/
 
 	Size visibleSize = Director::getInstance()->getVisibleSize();
 
 	auto game_back = Sprite::create("game_background.png");
 	game_back->setPosition(visibleSize.width / 2, visibleSize.height / 2);
-	addChild(game_back,-10);
+	addChild(game_back, -10);
 
-	toggle = Sprite::create("toggle.png");
-
-	toggle->setPosition(Vec2(240,visibleSize.height-570));
-	
-	toggleOriginVec = toggle->getPosition();
-
-	
-	addChild(toggle, 1);
-	
 
 	/////////////////////////////////////////////////
+	/*
 	auto touchListener = EventListenerTouchOneByOne::create();
 	// When "swallow touches" is true, then returning 'true' from the onTouchBegan method will "swallow" the touch event, preventing other listeners from using it.
 	touchListener->setSwallowTouches(true);
@@ -91,7 +87,7 @@ bool GameScene::init()
 		auto target = static_cast<Sprite*>(event->getCurrentTarget());
 		//Move the position of current button sprite
 		float moveAccessDt = 70.0f;
-		
+
 		float touchDtLength = fabs((touch->getStartLocation() - touch->getLocation()).length());
 		if (touchDtLength < 20.0f)
 		{
@@ -111,7 +107,7 @@ bool GameScene::init()
 			dir = 0;
 		else if (dirAng >= -135.0f && dirAng <= -45.0f)
 			dir = 0;
-		else 		
+		else
 			dir = 1;
 
 		switch (dir)
@@ -137,23 +133,23 @@ bool GameScene::init()
 		break;
 		}
 		if (target->getPositionY() < toggleOriginVec.y - moveAccessDt)
-		{ 
-			completePush(mDirection::BOTTOM); 
+		{
+			completePush(mDirection::BOTTOM);
 			target->setPositionY(toggleOriginVec.y - moveAccessDt);
 		}
-		if (target->getPositionY() > toggleOriginVec.y + moveAccessDt) 
+		if (target->getPositionY() > toggleOriginVec.y + moveAccessDt)
 		{
 			completePush(mDirection::TOP);
 			target->setPositionY(toggleOriginVec.y + moveAccessDt);
 		}
-		if (target->getPositionX() < toggleOriginVec.x - moveAccessDt) 
+		if (target->getPositionX() < toggleOriginVec.x - moveAccessDt)
 		{
-			completePush(mDirection::LEFT); 
+			completePush(mDirection::LEFT);
 			target->setPositionX(toggleOriginVec.x - moveAccessDt);
 		}
-		if (target->getPositionX() > toggleOriginVec.x + moveAccessDt) 
+		if (target->getPositionX() > toggleOriginVec.x + moveAccessDt)
 		{
-			completePush(mDirection::RIGHT); 
+			completePush(mDirection::RIGHT);
 			target->setPositionX(toggleOriginVec.x + moveAccessDt);
 		}
 	};
@@ -170,7 +166,7 @@ bool GameScene::init()
 	};
 
 	_eventDispatcher->addEventListenerWithSceneGraphPriority(touchListener,toggle);
-
+	*/
 	///////////////////////////////////////////////////////
 
 	//영단어 목록보여주는 부분
@@ -185,7 +181,7 @@ bool GameScene::init()
 	listView->setScrollBarEnabled(false);
 
 	listView->setItemsMargin(10.0f);
-	
+
 	addRandomStringInListView(true);
 
 	for (int i = 0; i < 6; i++)
@@ -197,27 +193,10 @@ bool GameScene::init()
 	*/
 	///////////////////////////
 
-	for (int i = 0; i < 4; i++)
-	{
-		crossLabels[i] = LabelTTF::create("", "fonts/font.ttf", 20);
-	}
-	updateCross();
-
-	crossLabels[mDirection::TOP]->setPosition(690, 540 - 100);
-	
-	crossLabels[mDirection::LEFT]->setPosition(545, 540 - 250);
-
-	crossLabels[mDirection::BOTTOM]->setPosition(690, 540 - 438);
-	
-	crossLabels[mDirection::RIGHT]->setPosition(845, 540 - 250);
-
-	for (int i = 0; i < 4; i++)
-		addChild(crossLabels[i],3);
-	
 	////////////////////////////////// score setting
-	scoreLabel = LabelTTF::create("0", "fonts/font.ttf", 50);
+	scoreLabel = Label::createWithTTF("0", "fonts/font.ttf", 50);
 
-	scoreLabel->setPosition(Vec2(800, 540 - 40));
+	scoreLabel->setPosition(Vec2(343, CONV_Y(53)));
 	scoreLabel->setColor(Color3B::BLACK);
 
 	addChild(scoreLabel);
@@ -226,12 +205,12 @@ bool GameScene::init()
 
 	timer = ProgressTimer::create(Sprite::create("timer.png"));
 
-	
+
 	timer->setPercentage(100.0f);
 	timer->setType(ProgressTimer::Type::BAR);
-	timer->setBarChangeRate(Vec2(1,0));
+	timer->setBarChangeRate(Vec2(1, 0));
 	timer->setMidpoint(Vec2(0, 1));
-	timer->setPosition(visibleSize.width*0.5, 500.0f);
+	timer->setPosition(visibleSize.width*0.5, CONV_Y(375));
 
 	fTime = 20.0f;			//제한시간 30초
 
@@ -244,9 +223,9 @@ bool GameScene::init()
 	auto pauseBtn = Button::create("pause.png");
 
 	pauseBtn->setZoomScale(0.7f);
-	pauseBtn->setPosition(Vec2(890, 540 - 474));
+	pauseBtn->setPosition(Vec2(35, CONV_Y(767)));
 
-	//addChild(pauseBtn);
+	addChild(pauseBtn);
 	/*
 	auto pauseListener = EventListenerTouchOneByOne::create();
 
@@ -260,174 +239,129 @@ bool GameScene::init()
 		pressPause();
 	};
 	*/
-	
+	//////////////////////////question setting
+
+	questionLabel = Label::createWithTTF("0", "fonts/chinese_font.ttf", 30);
+	pinLabel = Label::createWithTTF("", "fonts/chinese_font.ttf", 20);
+
+	questionLabel->setPosition(visibleSize.width/2,CONV_Y(185));
+	pinLabel->setPosition(10, -30);
+	pinLabel->setName("pin");
+
+	addChild(questionLabel);
+	questionLabel->addChild(pinLabel);
+	///////////////////////////answer Setting
+
+	Button* ansBtns[BUTTON_NUM];
+
+	for (int i = 0; i < BUTTON_NUM; i++)
+	{
+		ansBtns[i] = Button::create("button.png");
+		ansLabel[i] = Label::createWithTTF("", "fonts/chinese_font.ttf", 30.0f, Size(141, 141), TextHAlignment::CENTER, TextVAlignment::CENTER);
+		ansLabel[i]->setPosition(ansBtns[i]->getContentSize().width / 2, ansBtns[i]->getContentSize().height / 2); 
+	}
+
+	ansBtns[0]->setPosition(ccp(110, CONV_Y(482)));
+	ansBtns[1]->setPosition(ccp(343, CONV_Y(482)));
+	ansBtns[2]->setPosition(ccp(110, CONV_Y(670)));
+	ansBtns[3]->setPosition(ccp(343, CONV_Y(670)));
+
+	for (int i = 0; i < BUTTON_NUM; i++)
+	{
+		ansBtns[i]->addTouchEventListener(CC_CALLBACK_2(GameScene::touchEvent, this));
+		ansLabel[i]->setName("label");
+
+		ansBtns[i]->addChild(ansLabel[i]);
+		ansBtns[i]->setName("answer button");
+		ansBtns[i]->setTag(i);
+		ansBtns[i]->setZoomScale(0.0f);
+
+		addChild(ansBtns[i]);
+	}
+
+	update();
+
 	//////////////////////////////////
 	clearNum = 0;
 
 	scheduleUpdate();
+
+	//////////////////////////
 	return true;
 }
 void GameScene::touchEvent(Ref* pSender, Widget::TouchEventType type)
 {
-	auto toggle = ((GameScene*)pSender)->toggle;
-
+	auto clickedButton = (Button*)pSender;
 	switch (type)
 	{
-	case Widget::TouchEventType::BEGAN:
-		break;
-
-	case Widget::TouchEventType::MOVED:
-		break;
-
 	case Widget::TouchEventType::ENDED:
-		break;
-
-	case Widget::TouchEventType::CANCELED:
-		break;
-
-	default:
+		if (clickedButton->getTag() == currentAnsIndex)
+			correct();
+		else
+			uncorrect();
+		
 		break;
 	}
 }
 
-void GameScene::onKeyReleased(EventKeyboard::KeyCode keyCode,Event * event)
+void GameScene::onKeyReleased(EventKeyboard::KeyCode keyCode, Event * event)
 {
 }
 
-void GameScene::updateCross()
+void GameScene::correct()
 {
-	int r = RandomHelper::random_int<int>(0, 3);
+	ScoreManager::getInstance()->setScore(ScoreManager::getInstance()->getScore() + 10);
+	scoreLabel->setString(StringUtils::format("%d", ScoreManager::getInstance()->getScore()));
 
-	crossLabels[r]->setString(currentCorrect);
+	update();
+	setTimerPercent(timer->getPercentage() + 10.0f);
+}
 
-	correctDir = r;
-
-	CSVParser* inst = CSVParser::getInstance();
-
-	for (int i = 0; i < 4; i++)
-	{
-		if (i != r)
-		{
-			if (currentCorrectType == 0) //정답이 현재 영어면
-				crossLabels[i]->setString(inst->getRandomKorExceptParam(currentCorrect).c_str());
-			else                       //한국어면
-				crossLabels[i]->setString(inst->getRandomEngExceptParam(currentCorrect).c_str());
-		}
-	}
+void GameScene::uncorrect()
+{
+	setTimerPercent(timer->getPercentage() - 10.0f);
+	Device::vibrate(0.1f);
 }
 
 void GameScene::update()
 {
-	
-	if (++clearNum % 3 == 0)
+	size_t currentDataIndex = random(0, dataManager.getDataSize() - 1);	//현재 낸 문제의 인덱스 값
+	int questionType = random(0, 1);	//if(questionType == 0), question = Chinese;
+
+	currentAnsIndex = random(0, BUTTON_NUM-1);
+
+	MirrorData md = dataManager.getDataByIndex(currentDataIndex);
+
+	if (questionType == 0)
 	{
-		fTime -= 0.5f;
-	}
-	ScoreManager::getInstance()->setScore(ScoreManager::getInstance()->getScore() + 10);
-	scoreLabel->setString(StringUtils::format("%d", ScoreManager::getInstance()->getScore()));
+		questionLabel->setString(md.chinese);
+		pinLabel->setString(md.pinyin);
 
-	//if (listView->getChildren().empty()) return;
-
-	//listViewUpdate();
-
-	updateCross();
-}
-
-void GameScene::listViewUpdate()
-{
-	/*
-	auto p = CSVParser::getInstance()->getRandomPair();
-
-	auto item = (listView->getItem(0));
-
-	LabelTTF* label = static_cast<LabelTTF*>(item->getChildByName("target"));
-	
-	listView->removeItem(0);
-
-	item = (listView->getItem(0));
-
-	label = static_cast<LabelTTF*>(item->getChildByName("target"));
-
-	label->setOpacity(255);
-
-	if (label->getTag() == 0) //현재 문제가 영어면
-	{
-		currentCorrect = CSVParser::getInstance()->getKorAnswer(label->getString());
-		currentCorrectType = 0;
-	}
-	else                     //문제가 한국어면
-	{
-		currentCorrect = CSVParser::getInstance()->getEngAnswer(label->getString());
-		currentCorrectType = 1;
-	}
-	addRandomStringInListView();
-	*/
-}
-
-void GameScene::addRandomStringInListView(bool isTop)
-{
-	auto parserInst = CSVParser::getInstance();
-	Layout *custom_item = Layout::create();
-
-	auto p = parserInst->getRandomPair();
-
-	int r = RandomHelper::random_int<int>(0, 1);
-
-	LabelTTF* label;
-
-	if (r == 0)
-	{
-		label = LabelTTF::create(p.first, "fonts/font.ttf", 50);
-		label->setTag(0);	//영어면 라벨에 0을태그
+		//////// set answer
+		ansLabel[currentAnsIndex]->setString(md.kor);
+		for (int i = 0; i < BUTTON_NUM; i++)
+			if (i != currentAnsIndex)
+			{
+				int r_index = dataManager.getRandomIndexExceptParam(currentDataIndex);
+				ansLabel[i]->setString(dataManager.getKorByIndex(r_index));
+			}
 	}
 	else
 	{
-		label = LabelTTF::create(p.second, "fonts/font.ttf", 50);
-		label->setTag(1);
+		questionLabel->setString(md.kor);
+		pinLabel->setString("");
+		
+		//////// set answer
+		ansLabel[currentAnsIndex]->setString(md.chinese);
+		for (int i = 0; i < BUTTON_NUM; i++)
+			if (i != currentAnsIndex)
+			{
+				int r_index = dataManager.getRandomIndexExceptParam(currentDataIndex);
+				ansLabel[i]->setString(dataManager.getChineseByIndex(r_index));
+			}
 	}
-	if (isTop)
-	{
-		if (r == 0)
-		{
-			currentCorrect = p.second;
-			currentCorrectType = 0;
-		}
-		else
-		{
-			currentCorrect = p.first;
-			currentCorrectType = 1;
-		}
-	}
-	else
-	{
-		label->setOpacity(50);
-	}
-	label->setColor(Color3B::BLACK);
-	label->setName("target");
-
-	custom_item->setContentSize(label->getContentSize());
-	label->setPosition(Vec2(custom_item->getContentSize().width / 2.0f, custom_item->getContentSize().height / 2.0f));
-
-	custom_item->addChild(label);
-
-	//listView->addChild(custom_item);
-}
-
-void GameScene::completePush(mDirection d)
-{
-	if (bUpdateOnce) return;
-
-	if (d == correctDir)	//정답일 경우
-	{
-		update();
-		setTimerPercent(timer->getPercentage() + 5.0f);
-	}
-	else
-	{
-			setTimerPercent(timer->getPercentage() - 10.0f);
-			Device::vibrate(0.1f);
-	}
-	bUpdateOnce = true;
+	//updateQuestion();
+	//updateAnswer();
 }
 void GameScene::setTimerPercent(float percent)
 {
@@ -435,7 +369,7 @@ void GameScene::setTimerPercent(float percent)
 
 	timer->setPercentage(percent);
 
-	auto *progressToZero = ProgressFromTo::create(fTime*(percent/100.0f), percent, 0);
+	auto *progressToZero = ProgressFromTo::create(fTime*(percent / 100.0f), percent, 0);
 	auto gameOverAction = CallFuncN::create(CC_CALLBACK_0(GameScene::gameOver, this));
 
 	timer->runAction(Sequence::create(progressToZero, gameOverAction, NULL));
@@ -457,11 +391,6 @@ void GameScene::pressPause()
 
 void GameScene::update(float dt)
 {
-	if (timer->getPercentage() <= 0)
-	{
-		gameOver();
-		unscheduleUpdate();
-	}
 }
 
 void GameScene::goHome(cocos2d::Ref * pSender, cocos2d::ui::Widget::TouchEventType type)

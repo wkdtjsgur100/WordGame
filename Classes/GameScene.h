@@ -2,33 +2,27 @@
 
 #include "cocos2d.h"
 #include "ui/CocosGUI.h"
+#include "DataManager.h"
+
+#define BUTTON_NUM 4
 
 class GameScene : public cocos2d::Layer
 {
 	//cocos2d::ui::ListView* listView;
-	cocos2d::Vec2 toggleOriginVec;
-	cocos2d::LabelTTF* crossLabels[4];
-	std::string currentCorrect;
-	int currentCorrectType; //0이면 영어, 1이면 한글
-	bool isFirst;
-	float dirAng;
-	cocos2d::LabelTTF* scoreLabel;
-	enum mDirection {
-		TOP,
-		LEFT,
-		BOTTOM,
-		RIGHT
-	};
-	int correctDir;
-	bool bUpdateOnce;
-
+	DataManager dataManager;
+	
 	cocos2d::ProgressTimer* timer;
 	float fTime;
 
 	int clearNum;
-public:
 
-	cocos2d::Sprite* toggle;
+	cocos2d::Label* ansLabel[BUTTON_NUM];
+	cocos2d::Label* questionLabel;
+	cocos2d::Label* pinLabel;
+	cocos2d::Label* scoreLabel;
+
+	int currentAnsIndex;	//현재 정답의 인덱스를 저장. 
+public:
 
 	static cocos2d::Scene* createScene();
 
@@ -37,13 +31,11 @@ public:
 	// a selector callback
 	void touchEvent(cocos2d::Ref* pSender, cocos2d::ui::Widget::TouchEventType type);
 	virtual void onKeyReleased(cocos2d::EventKeyboard::KeyCode keyCode, cocos2d::Event* event);
-
-	void updateCross();
+	
+	void correct();		//맞았다면
+	void uncorrect();	//틀렸다면
 	void update();
-	void listViewUpdate();
-	void addRandomStringInListView(bool isTop = false);
 
-	void completePush(mDirection d);
 	void gameOver();
 
 	void setTimerPercent(float percent);
