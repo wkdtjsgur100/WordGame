@@ -334,34 +334,54 @@ void GameScene::update()
 
 	if (questionType == 0)
 	{
+		changeLabelTTF(questionLabel, labelType::CHIENESE);
 		questionLabel->setString(md.chinese);
 		pinLabel->setString(md.pinyin);
 
 		//////// set answer
 		ansLabel[currentAnsIndex]->setString(md.kor);
 		for (int i = 0; i < BUTTON_NUM; i++)
+		{
+			changeLabelTTF(ansLabel[i], labelType::KOREAN);
 			if (i != currentAnsIndex)
 			{
 				int r_index = dataManager.getRandomIndexExceptParam(currentDataIndex);
 				ansLabel[i]->setString(dataManager.getKorByIndex(r_index));
 			}
+		}
 	}
 	else
 	{
+		changeLabelTTF(questionLabel, labelType::KOREAN);
+
 		questionLabel->setString(md.kor);
+
 		pinLabel->setString("");
 		
 		//////// set answer
 		ansLabel[currentAnsIndex]->setString(md.chinese);
 		for (int i = 0; i < BUTTON_NUM; i++)
+		{
+			changeLabelTTF(ansLabel[i], labelType::CHIENESE);
 			if (i != currentAnsIndex)
 			{
 				int r_index = dataManager.getRandomIndexExceptParam(currentDataIndex);
 				ansLabel[i]->setString(dataManager.getChineseByIndex(r_index));
 			}
+		}
 	}
 	//updateQuestion();
 	//updateAnswer();
+}
+void GameScene::changeLabelTTF(cocos2d::Label* label, labelType type)
+{
+	TTFConfig tc = label->getTTFConfig();
+	if (type == labelType::CHIENESE)
+		tc.fontFilePath = "fonts/chinese_font.ttf";
+	else
+		tc.fontFilePath = "fonts/label_font.ttf";
+
+	label->setTTFConfig(tc);
 }
 void GameScene::setTimerPercent(float percent)
 {
@@ -370,9 +390,8 @@ void GameScene::setTimerPercent(float percent)
 	timer->setPercentage(percent);
 
 	auto *progressToZero = ProgressFromTo::create(fTime*(percent / 100.0f), percent, 0);
-	auto gameOverAction = CallFuncN::create(CC_CALLBACK_0(GameScene::gameOver, this));
 
-	timer->runAction(Sequence::create(progressToZero, gameOverAction, NULL));
+	timer->runAction(progressToZero);
 }
 
 void GameScene::pressPause()
@@ -391,6 +410,11 @@ void GameScene::pressPause()
 
 void GameScene::update(float dt)
 {
+	if (timer->getPercentage() <= 0)
+	{
+		gameOver();
+		unscheduleUpdate();
+	}
 }
 
 void GameScene::goHome(cocos2d::Ref * pSender, cocos2d::ui::Widget::TouchEventType type)

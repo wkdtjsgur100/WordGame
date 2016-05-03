@@ -26,12 +26,15 @@ bool GameOverScene::init()
 
 	auto back = Sprite::create("gameover_background.png");
 
-	back->setPosition(Vec2(960 / 2, 540 / 2));
+	Size visibleSize = Director::getInstance()->getVisibleSize();
+	
+	back->setPosition(Vec2(visibleSize.width/2,visibleSize.height/2));
+
 	addChild(back,-10);
 
 	auto label = Label::createWithTTF(StringUtils::format("%d", ScoreManager::getInstance()->getScore()).c_str(), "fonts/font.ttf", 50);
 
-	label->setPosition(700, 540-270);
+	label->setPosition(369, 400);
 	label->setColor(Color3B::BLACK);
 
 	this->addChild(label);

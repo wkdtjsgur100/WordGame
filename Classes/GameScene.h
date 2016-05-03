@@ -21,7 +21,12 @@ class GameScene : public cocos2d::Layer
 	cocos2d::Label* pinLabel;
 	cocos2d::Label* scoreLabel;
 
-	int currentAnsIndex;	//현재 정답의 인덱스를 저장. 
+	int currentAnsIndex;	//현재 정답의 인덱스를 저장.
+
+	enum labelType {
+		CHIENESE,
+		KOREAN
+	};
 public:
 
 	static cocos2d::Scene* createScene();
@@ -34,7 +39,9 @@ public:
 	
 	void correct();		//맞았다면
 	void uncorrect();	//틀렸다면
-	void update();
+	void update();		//answer와 question을 업데이트
+
+	void changeLabelTTF(cocos2d::Label* label, labelType type);		//폰트 src을 type에 따라 변경..
 
 	void gameOver();
 
